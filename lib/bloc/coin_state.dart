@@ -5,10 +5,14 @@ import 'package:equatable/equatable.dart';
 class CoinListState extends Equatable {
   final Status status;
   final List<Coin> coins;
-  final String query, error;
+  final String query;
+  final String error;
   final SortBy sortBy;
   final bool ascending;
-  final FilterBy filter;
+  final double? minPrice;
+  final double? maxPrice;
+  final int page;
+  final int perPage;
 
   const CoinListState({
     this.status = Status.loading,
@@ -17,8 +21,17 @@ class CoinListState extends Equatable {
     this.error = '',
     this.sortBy = SortBy.marketCap,
     this.ascending = false,
-    this.filter = FilterBy.all,
+    this.minPrice,
+    this.maxPrice,
+    this.page = 1,
+    this.perPage = 20,
   });
+
+  bool get hasActiveFilter =>
+      minPrice != null || maxPrice != null;
+
+  bool get hasActiveSort =>
+      sortBy != SortBy.marketCap || ascending;
 
   CoinListState copyWith({
     Status? status,
@@ -27,7 +40,10 @@ class CoinListState extends Equatable {
     String? error,
     SortBy? sortBy,
     bool? ascending,
-    FilterBy? filter,
+    Object? minPrice = _sentinel,
+    Object? maxPrice = _sentinel,
+    int? page,
+    int? perPage,
   }) =>
       CoinListState(
         status: status ?? this.status,
@@ -36,38 +52,28 @@ class CoinListState extends Equatable {
         error: error ?? this.error,
         sortBy: sortBy ?? this.sortBy,
         ascending: ascending ?? this.ascending,
-        filter: filter ?? this.filter,
+        minPrice: minPrice == _sentinel ? this.minPrice : (minPrice as double?),
+        maxPrice: maxPrice == _sentinel ? this.maxPrice : (maxPrice as double?),
+        page: page ?? this.page,
+        perPage: perPage ?? this.perPage,
       );
 
-  List<Coin> get visible {
-    final q = query.toLowerCase();
-    final list = coins.where((c) {
-      final matchSearch = c.name.toLowerCase().contains(q) ||
-          c.symbol.toLowerCase().contains(q);
-      final matchFilter = filter == FilterBy.all ||
-          (filter == FilterBy.gainers && c.priceChangePercentage24h > 0) ||
-          (filter == FilterBy.losers && c.priceChangePercentage24h < 0);
-      return matchSearch && matchFilter;
-    }).toList();
-
-    int compare(Coin a, Coin b) {
-      switch (sortBy) {
-        case SortBy.marketCap:
-          return a.marketCap.compareTo(b.marketCap);
-        case SortBy.price:
-          return a.currentPrice.compareTo(b.currentPrice);
-        case SortBy.volume:
-          return a.totalVolume.compareTo(b.totalVolume);
-        case SortBy.change:
-          return a.priceChangePercentage24h.compareTo(b.priceChangePercentage24h);
-      }
-    }
-
-    list.sort((a, b) => ascending ? compare(a, b) : compare(b, a));
-    return list;
-  }
+  List<Coin> get visible => coins;
 
   @override
-  List<Object?> get props =>
-      [status, coins, query, error, sortBy, ascending, filter];
+  List<Object?> get props => [
+        status,
+        coins,
+        query,
+        error,
+        sortBy,
+        ascending,
+        minPrice,
+        maxPrice,
+        page,
+        perPage,
+      ];
 }
+
+/// Sentinel object to distinguish "not provided" from null
+const _sentinel = Object();

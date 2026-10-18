@@ -1,2 +1,1 @@
-
-String get baseUrl => 'http://10.0.2.2:3000';
+String get baseUrl => 'https://puny-jeans-dress.loca.lt';

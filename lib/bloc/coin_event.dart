@@ -1,5 +1,3 @@
-
-
 import 'package:crypto_mobile/core/enum.dart';
 
 abstract class CoinListEvent {}
@@ -19,7 +17,21 @@ class SortChanged extends CoinListEvent {
   SortChanged(this.sortBy);
 }
 
-class FilterChanged extends CoinListEvent {
-  final FilterBy filter;
-  FilterChanged(this.filter);
+class SortReset extends CoinListEvent {}
+
+class FilterApplied extends CoinListEvent {
+  final double? minPrice;
+  final double? maxPrice;
+
+  FilterApplied({
+    this.minPrice,
+    this.maxPrice,
+  });
+}
+
+class FilterReset extends CoinListEvent {}
+
+class PageChanged extends CoinListEvent {
+  final int page;
+  PageChanged(this.page);
 }
